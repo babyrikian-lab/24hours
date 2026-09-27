@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>24:00 — You have a whole day. Do you really?</title>
+<style>
+:root{--bg:#0b0b0d;--card:#151519;--line:#2b2b32;--text:#f4f4f2;--muted:#9b9ba4;--red:#ff3b30;--green:#74e06d}
+*{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 50% -10%,#25252d 0,#0b0b0d 42%);color:var(--text);font-family:Inter,Arial,sans-serif;min-height:100vh}
+#app{max-width:900px;margin:auto;padding:28px 18px 50px}.top{display:flex;justify-content:space-between;gap:15px;align-items:end;border-bottom:1px solid var(--line);padding-bottom:18px}
+.kicker{font-size:12px;letter-spacing:3px;color:var(--red);font-weight:800}.clock{font:800 34px/1 monospace}.title{font-size:clamp(36px,7vw,72px);line-height:.9;margin:18px 0 8px;letter-spacing:-4px}.subtitle{color:var(--muted);font-size:15px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:22px 0}.stat{background:#111115;border:1px solid var(--line);padding:12px;border-radius:8px}.stat b{display:block;font-size:11px;color:var(--muted);letter-spacing:1px}.bar{height:6px;background:#28282e;margin-top:9px;border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--text);transition:.4s}.screen{background:rgba(21,21,25,.96);border:1px solid var(--line);border-radius:14px;padding:24px;box-shadow:0 20px 60px #0008}.round{font-size:11px;letter-spacing:2px;color:var(--red);font-weight:800}.scene{font-size:30px;margin:8px 0}.body{color:#d5d5d9;line-height:1.6;max-width:700px}.choices{display:grid;gap:10px;margin-top:20px}.choice{background:#1b1b21;border:1px solid #34343c;color:var(--text);padding:17px;border-radius:9px;text-align:left;cursor:pointer;transition:.15s}.choice:hover{border-color:#777;transform:translateY(-1px)}.choice strong{display:block;margin-bottom:5px}.choice span{font-size:13px;color:var(--muted)}.result{margin-top:16px;padding:12px;border-left:3px solid var(--red);background:#111115;white-space:pre-line;color:#ddd}.next{margin-top:18px;width:100%;padding:15px;border:0;border-radius:8px;background:var(--text);color:#111;font-weight:800;cursor:pointer}.hidden{display:none}.intro{text-align:center;padding:55px 15px}.intro h1{font-size:clamp(54px,12vw,110px);letter-spacing:-7px;margin:0}.intro p{color:var(--muted);max-width:560px;margin:15px auto 28px;line-height:1.6}.start{padding:16px 28px;border:1px solid #555;background:var(--text);color:#111;border-radius:7px;font-weight:900;cursor:pointer}.final{text-align:center}.final h2{font-size:clamp(35px,8vw,70px);letter-spacing:-3px;margin:10px 0}.final .big{font-size:50px;font-weight:900}.finalgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:25px 0;text-align:left}.finalgrid div{padding:16px;background:#111115;border:1px solid var(--line);border-radius:8px}.quote{font-size:21px;line-height:1.4;margin:25px auto;max-width:650px}.restart{padding:14px 22px;border:1px solid #555;background:transparent;color:var(--text);border-radius:7px;font-weight:800;cursor:pointer}
+@media(max-width:650px){.stats{grid-template-columns:1fr 1fr}.top{align-items:center}.clock{font-size:25px}.scene{font-size:24px}.finalgrid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const scenes=[
+{time:"07:00",title:"THE ALARM",text:"Bạn thức dậy. Điện thoại có 3 thông báo: deadline assignment, tin nhắn nhóm và TikTok. Bạn chỉ định kiểm tra một chút.",choices:[
+["A","Dậy ngay","Bắt đầu ngày mà không chạm vào điện thoại.",{academic:5,energy:3,self:3,control:6,time:30,msg:"Bạn giữ được buổi sáng của mình."}],
+["B","5 phút nữa thôi","Bạn mở điện thoại trước khi ra khỏi giường.",{academic:0,energy:3,self:0,control:-10,time:25,msg:"5 phút biến thành một chuỗi video ngắn."}],
+["C","Kiểm tra nhanh","Bạn xem thông báo rồi lướt feed một chút.",{academic:2,energy:0,self:-3,control:-16,time:45,msg:"Bạn bắt đầu ngày mới bằng việc trả thời gian cho màn hình."}]
+]},
+{time:"09:00",title:"THE DEADLINE",text:"Bạn có 3 tiếng trống trước lớp tiếp theo. Assignment phải nộp tối nay.",choices:[
+["A","Làm ngay","Tập trung hoàn thành assignment.",{academic:22,energy:-20,self:-5,control:2,time:180,msg:"Bài tiến triển rõ rệt, nhưng năng lượng giảm."}],
+["B","Nghỉ trước","Bạn nghỉ, ăn uống và để đầu óc thở một chút.",{academic:-8,energy:15,self:12,control:3,time:45,msg:"Bạn giữ được một phần thời gian cho chính mình."}],
+["C","Vừa làm vừa lướt","Bạn mở TikTok cạnh file assignment. “Mình vẫn đang làm mà.”",{academic:10,energy:-12,self:-3,control:-18,time:135,msg:"Bạn làm được việc, nhưng mất quyền kiểm soát sự chú ý."}]
+]},
+{time:"12:30",title:"LUNCH BREAK",text:"Bạn có một tiếng nghỉ. Đây đáng lẽ là thời gian để ăn và hồi phục.",choices:[
+["A","Không điện thoại","Ăn trưa và để điện thoại trong túi.",{academic:0,energy:12,self:16,control:7,time:45,msg:"Một khoảng nghỉ thật sự."}],
+["B","Vừa ăn vừa lướt","Bạn xem feed trong lúc ăn.",{academic:0,energy:2,self:3,control:-12,time:55,msg:"Bạn nghỉ, nhưng đầu óc vẫn tiếp tục chạy."}],
+["C","Chỉ 5 phút","Bạn mở một video. Rồi video tiếp theo tự chạy.",{academic:0,energy:-2,self:-5,control:-23,time:70,msg:"SCREEN TIME: +47 MINUTES. Bạn không định dành lâu đến vậy."}]
+]},
+{time:"15:00",title:"THE GROUP CHAT",text:"Điện thoại rung. “Mọi người ơi deadline nhóm dời lên tối nay nha 😭”. Bạn đã bắt đầu mệt.",choices:[
+["A","Tiếp tục làm","Bạn nhận thêm phần việc.",{academic:18,energy:-20,self:-12,control:-2,time:110,msg:"Bạn cứu deadline, nhưng lấy thêm thời gian của mình."}],
+["B","Nói mình cần nghỉ","Bạn đặt giới hạn và báo với nhóm.",{academic:-4,energy:8,self:13,control:5,time:25,msg:"Bạn không hoàn thành mọi thứ, nhưng bạn vẫn còn quyền lựa chọn."}],
+["C","Im lặng và làm","Bạn không nói gì, chỉ âm thầm nhận việc.",{academic:12,energy:-16,self:-16,control:-10,time:95,msg:"Bạn bắt đầu chọn theo áp lực thay vì nhu cầu của mình."}]
+]},
+{time:"19:00",title:"THE FEED",text:"Assignment gần xong. Bạn mệt và mở TikTok để “xả stress”. Một video. Rồi video thứ hai.",choices:[
+["A","Đóng điện thoại","Bạn đặt máy xuống và quay lại việc cần làm.",{academic:8,energy:4,self:4,control:10,time:15,msg:"Bạn vẫn có thể lấy lại sự chú ý của mình."}],
+["B","10 phút thôi","Bạn đặt mục tiêu 10 phút.",{academic:0,energy:5,self:4,control:-12,time:38,msg:"10 phút thành 38 phút."}],
+["C","Xem cho quên mệt","Bạn tiếp tục lướt vì hôm nay đã quá mệt rồi.",{academic:-3,energy:-8,self:-10,control:-28,time:75,msg:"Bạn tìm thấy sự giải tỏa ngắn hạn và trả bằng thời gian dài hạn."}]
+]},
+{time:"23:45",title:"THE LAST DEADLINE",text:"Assignment cuối cùng cũng xong. Nhưng sáng mai có presentation lúc 8:00. Bạn còn một phần slide chưa chuẩn bị.",choices:[
+["A","Làm tiếp","Bạn thức khuya để chuẩn bị.",{academic:18,energy:-27,self:-15,control:-3,time:120,msg:"Academic tăng. Nhưng ngày mai đang được trả giá từ tối nay."}],
+["B","Đi ngủ","Bạn chấp nhận rằng mọi thứ không thể hoàn hảo.",{academic:-7,energy:22,self:15,control:6,time:20,msg:"Bạn giữ lại một phần năng lượng cho chính mình."}],
+["C","Nghỉ 15 phút rồi làm","Bạn mở điện thoại trước khi bắt đầu.",{academic:5,energy:-10,self:-8,control:-24,time:65,msg:"15 phút biến thành hơn một tiếng. Deadline vẫn ở đó."}]
+]}
+];
+
+let s,idx,selected;
+function reset(){s={hours:24*60,academic:70,energy:100,self:100,control:100,phone:0};idx=-1;renderIntro()}
+function clamp(x){return Math.max(0,Math.min(100,x))}
+function renderIntro(){document.getElementById("app").innerHTML=`<div class="intro"><div class="kicker">AN INTERACTIVE EXPERIENCE</div><h1>24:00</h1><p><b>You have a whole day. Do you really?</b><br><br>Bạn là một sinh viên. Một ngày có 24 giờ. Deadline, điểm số, nhóm chat và mạng xã hội đang chờ bạn. Hãy xem bạn sẽ dùng thời gian của mình như thế nào.</p><button class="start" onclick="start()">START YOUR DAY</button></div>`}
+function start(){idx=0;render()}
+function bar(v){return `<div class="bar"><div class="fill" style="width:${clamp(v)}%"></div></div>`}
+function render(){
+ let q=scenes[idx];
+ let h=Math.floor(Math.max(0,s.hours)/60),m=Math.max(0,s.hours)%60;
+ document.getElementById("app").innerHTML=`<div class="top"><div><div class="kicker">24:00 / STUDENT LIFE</div><div class="subtitle">A game about time, pressure & control</div></div><div class="clock">${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}</div></div>
+ <div class="stats">
+ <div class="stat"><b>ACADEMIC</b><strong>${clamp(s.academic)}%</strong>${bar(s.academic)}</div>
+ <div class="stat"><b>MENTAL ENERGY</b><strong>${clamp(s.energy)}%</strong>${bar(s.energy)}</div>
+ <div class="stat"><b>SELF</b><strong>${clamp(s.self)}%</strong>${bar(s.self)}</div>
+ <div class="stat"><b>PHONE CONTROL</b><strong>${clamp(s.control)}%</strong>${bar(s.control)}</div>
+ </div>
+ <div class="screen"><div class="round">ROUND ${idx+1} / ${scenes.length} · ${q.time}</div><div class="scene">${q.title}</div><p class="body">${q.text}</p>
+ <div class="choices">${q.choices.map((c,i)=>`<button class="choice" onclick="choose(${i})"><strong>${c[0]} — ${c[1]}</strong><span>${c[2]}</span></button>`).join("")}</div>
+ <div id="res"></div></div>`;
+}
+function choose(i){
+ if(selected)return; selected=true; let c=scenes[idx].choices[i],d=c[3];
+ s.academic+=d.academic;s.energy+=d.energy;s.self+=d.self;s.control+=d.control;s.hours-=d.time;
+ if(d.control<0)s.phone+=Math.abs(d.control);
+ s.academic=clamp(s.academic);s.energy=clamp(s.energy);s.self=clamp(s.self);s.control=clamp(s.control);
+ document.querySelectorAll(".choice").forEach(b=>b.disabled=true);
+ document.getElementById("res").innerHTML=`<div class="result">${d.msg}</div><button class="next" onclick="next()">CONTINUE →</button>`;
+}
+function next(){selected=false;idx++; if(idx>=scenes.length)final(); else render()}
+function final(){
+ let humanity=Math.round(s.energy*.25+s.self*.35+s.control*.4);
+ let spent=24*60-s.hours;
+ let h=Math.floor(Math.max(0,spent)/60),m=Math.max(0,spent)%60;
+ document.getElementById("app").innerHTML=`<div class="screen final"><div class="kicker">02:13 AM · FINAL REPORT</div><h2>YOU FINISHED<br>YOUR DAY.</h2><p class="quote">But did you really live it?</p>
+ <div class="finalgrid"><div><b>ASSIGNMENT</b><br>COMPLETED ✓</div><div><b>DEADLINE</b><br>COMPLETED ✓</div><div><b>TIME USED</b><br>${h}h ${m}m</div><div><b>SCREEN CONTROL</b><br>${Math.round(s.control)}%</div><div><b>MENTAL ENERGY</b><br>${Math.round(s.energy)}%</div><div><b>TIME WITH YOURSELF</b><br>${Math.max(0,Math.round(s.self*.36))} min (estimated)</div></div>
+ <div class="kicker">YOUR HUMANITY BALANCE</div><div class="big">${humanity}%</div><div class="bar" style="height:10px"><div class="fill" style="width:${humanity}%"></div></div>
+ <p class="quote"><b>Không phải bạn hết thời gian.<br>Bạn đã trao nó đi từng chút một.</b></p>
+ <p class="body">Vòng lặp bắt đầu rất nhỏ: deadline → stress → điện thoại → mất thời gian → deadline. Tha hóa không nhất thiết là trở thành một người khác. Đôi khi, nó là lúc bạn dần mất quyền quyết định mình muốn sống một ngày như thế nào.</p>
+ <button class="restart" onclick="reset()">PLAY AGAIN</button></div>`
+}
+reset();
+</script>
+</body>
+</html>
